@@ -12,12 +12,26 @@ class SphincterReader:
         self.open_event = open_event
         self.close_event = close_event
         self.serial_handler = serial_handler
+        self.state = "UNKNOWN"
         
     def __call__(self):
         logging.info("starting reader thread")
         while True:
             data = self.serial_handler._serial.readline().strip()
             logging.info("read data %s" % data)
+            if data == "UNLOCKED":
+                self.serial_handler.open_event.set()
+                self.serial_handler.open_event.clear()
+                self.state = "UNLOCKED"
+            if data == "LOCKED":
+                self.serial_handler.closed_event.set()
+                self.serial_handler.closed_event.clear()
+                self.state = "LOCKED"
+            if data == "OPEN":
+                self.state = "OPEN"
+            if data == "BUSY":
+                self.state = "BUSY"
+            logging.info("Sphincter state is now %s" % self.state) 
             
 class SphincterReconnectReader(SphincterReader):
     """
@@ -54,8 +68,9 @@ class SphincterSerialHandler:
         self.open_event = Event()
         
         # init reader thread
-        self._reader_thread = Thread(target=SphincterReconnectReader(self.open_event, self.closed_event, self),
-                                     name="ReaderThread")
+        self._reader = SphincterReconnectReader(self.open_event, self.closed_event, self) 
+        self._reader_thread = Thread(target=self._reader, name="ReaderThread")
+
         # set daemon flag so the reader works in the background
         self._reader_thread.daemon = True
 
@@ -94,3 +109,9 @@ class SphincterSerialHandler:
         """
         self._serial.write(b"r")
         logging.info("sent RESET")
+        
+    @property
+    def state(self):
+        if not self._reader.serial_handler._serial.isOpen():
+            return "UNKNOWN"
+        return self._reader.state
