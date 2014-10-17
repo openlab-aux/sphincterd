@@ -34,7 +34,7 @@ if __name__ == "__main__":
     if "loglevel" not in config_params:
         logging.critical("loglevel parameter not in config file")
         exit(1)
-
+    
     # parse loglevel
     if conf.loglevel == "DEBUG":
         loglevel = logging.DEBUG
@@ -54,6 +54,22 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(levelname)8s - %(threadName)s/%(funcName)s - %(message)s',
                         datefmt="%Y-%m-%d %H:%M")
     logging.info("ohai, this is sphincterd")
+    
+    if "address" not in config_params:
+        logging.critical("address parameter not in config file")
+        exit(1)
+
+    listen_address = conf.address
+
+    if "portnumber" not in config_params:
+        logging.critical("portnumber parameter not in config file")
+        exit(1)
+    
+    try:
+        listen_port = int(conf.portnumber)
+    except ValueError:
+        logging.critical("couldn't parse port number parameter")
+        exit(1)
 
     try:
         s = SphincterSerialHandler(device=conf.device)
@@ -68,9 +84,7 @@ if __name__ == "__main__":
     r = SphincterRequestHandler(q, s)
     r.start()
     
-    
-    SphincterHTTPServerRunner.start_thread(('localhost', 1337), q, s, um)
-    
+    SphincterHTTPServerRunner.start_thread((listen_address, listen_port), q, s, um)
     
     # sleep until CTRL-C, then quit.
     try:
