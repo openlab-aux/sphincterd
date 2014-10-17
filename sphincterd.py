@@ -54,14 +54,20 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(levelname)8s - %(threadName)s/%(funcName)s - %(message)s',
                         datefmt="%Y-%m-%d %H:%M")
     logging.info("ohai, this is sphincterd")
-    s = SphincterSerialHandler(device='/dev/ttyACM0')
-    s.connect()
+
+    try:
+        s = SphincterSerialHandler(device=conf.device)
+        s.connect()
+    except (OSError, IOError), e:
+        logging.critical("could not open device: %s" % str(e))
+        exit(1)
+        
+    um = UserManager(dbpath="sqlite:///"+path.join(path.abspath(path.dirname(__file__)), "sphincter.sqlite"))
     
     q = SphincterRequestQueue()
     r = SphincterRequestHandler(q, s)
     r.start()
     
-    um = UserManager(dbpath="sqlite:///"+path.join(path.abspath(path.dirname(__file__)), "sphincter.sqlite"))
     
     SphincterHTTPServerRunner.start_thread(('localhost', 1337), q, s, um)
     
