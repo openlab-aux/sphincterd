@@ -40,6 +40,12 @@ class UserManager:
         s.add(u)
         s.commit()
         return u
+    
+    def check_token(self, token):
+        u = self.get_user_by_token
+        if u is not None:
+            return True
+        return False
 
 class User(Base):
     __tablename__ = "users"
