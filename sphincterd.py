@@ -3,9 +3,12 @@
 import logging
 from time import sleep
 
+from os import path
+
 from sphincter.serial_connection import SphincterSerialHandler
 from sphincter.requestqueue import SphincterRequestQueue, SphincterRequestHandler
 from sphincter.httpserver import SphincterHTTPServerRunner
+from sphincter.authentication import UserManager
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
@@ -19,7 +22,9 @@ if __name__ == "__main__":
     r = SphincterRequestHandler(q, s)
     r.start()
     
-    SphincterHTTPServerRunner.start_thread(('localhost', 1337), q, s)
+    um = UserManager(dbpath="sqlite:///"+path.join(path.abspath(path.dirname(__file__)), "sphincter.sqlite"))
+    
+    SphincterHTTPServerRunner.start_thread(('localhost', 1337), q, s, um)
     
     
     # sleep until CTRL-C, then quit.

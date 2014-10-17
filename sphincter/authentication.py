@@ -7,6 +7,8 @@ def random_token(n):
     for i in range(n):
         res += random.choice(TOKEN_CHARS)
     return res
+    
+import logging
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -30,9 +32,14 @@ class UserManager:
     def get_user_by_token(self, token):
         s = self.session()
         try:
-            return s.query(User).filter_by(token=token).one()
+            u = s.query(User).filter_by(token=token).one()
+            logging.info("found user %s" % u.email)
+            return u
         except NoResultFound:
+            logging.info("Could't find user for token %s" % token)
             return None
+        finally:
+            s.close()
         
     def add_user(self, email):
         s = self.session()
@@ -42,7 +49,7 @@ class UserManager:
         return u
     
     def check_token(self, token):
-        u = self.get_user_by_token
+        u = self.get_user_by_token(token)
         if u is not None:
             return True
         return False
