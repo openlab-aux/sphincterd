@@ -38,13 +38,13 @@ class SphincterHTTPRequestHandler(BaseHTTPRequestHandler):
             r = SphincterRequest(REQUEST_OPEN)
             self.server._request_queue.append(r)
             r.event.wait()
-            self.respond(200, "success")
+            self.respond(200, "UNLOCKED")
             return
         elif params["action"] == "close":
             r = SphincterRequest(REQUEST_CLOSE)
             self.server._request_queue.append(r)
             r.event.wait()
-            self.respond(200, "success")
+            self.respond(200, "LOCKED")
             return
         elif params["action"] == "test":
             self.respond(200, "OK")
