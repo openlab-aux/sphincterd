@@ -4,6 +4,7 @@ import logging
 from time import sleep
 
 from sphincter.serial_connection import SphincterSerialHandler
+from sphincter.requestqueue import SphincterRequestQueue, SphincterRequestHandler
 from sphincter.httpserver import SphincterHTTPServerRunner
 
 if __name__ == "__main__":
@@ -13,7 +14,12 @@ if __name__ == "__main__":
     logging.info("ohai, this is sphincterd")
     s = SphincterSerialHandler(device='/dev/ttyACM0')
     s.connect()
-    SphincterHTTPServerRunner.start_thread(('localhost', 1337), s)
+    
+    q = SphincterRequestQueue()
+    r = SphincterRequestHandler(q, s)
+    r.start()
+    
+    SphincterHTTPServerRunner.start_thread(('localhost', 1337), q, s)
     
     
     # sleep until CTRL-C, then quit.
