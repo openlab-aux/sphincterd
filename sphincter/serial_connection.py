@@ -4,6 +4,8 @@ from time import sleep
 
 from serial import Serial, SerialException
 
+import hooks
+
 class SphincterReader:
     """
     Read Sphincter state forever
@@ -23,14 +25,20 @@ class SphincterReader:
                 self.serial_handler.open_event.set()
                 self.serial_handler.open_event.clear()
                 self.state = "UNLOCKED"
-            if data == "LOCKED":
+                hooks.open_hook()
+            elif data == "LOCKED":
                 self.serial_handler.closed_event.set()
                 self.serial_handler.closed_event.clear()
                 self.state = "LOCKED"
-            if data == "OPEN":
+                hooks.closed_hook()
+            elif data == "OPEN":
                 self.state = "OPEN"
-            if data == "BUSY":
+            elif data == "BUSY":
                 self.state = "BUSY"
+            elif data == "FAILURE":
+                self.state = "FAILURE"
+                hooks.failure_hook()
+
             logging.info("Sphincter state is now %s" % self.state) 
             
 class SphincterReconnectReader(SphincterReader):

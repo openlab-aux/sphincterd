@@ -21,8 +21,22 @@ if __name__ == "__main__":
                          default=path.join(path.abspath(path.dirname(__file__)), "sphincterd.conf"),
                          help="Path to configuration file")
     aparser.add_argument("--initdb", action="store_true", help="create database")
+    aparser.add_argument("--test-hook", action="store", help="test hooks")
 
     args = aparser.parse_args()
+    
+    if args.test_hook is not None:
+        import hooks
+        if args.test_hook == "open":
+            hooks.open_hook()
+        elif args.test_hook == "closed":
+            hooks.closed_hook()
+        elif args.test_hook == "failure":
+            hooks.failure_hook()
+        else:
+            print("unknown hook!")
+            exit(1)
+        exit(0)
 
     conf = SphincterConfig(args.configfile)
     config_params = conf.__dict__.keys()
