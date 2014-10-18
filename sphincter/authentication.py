@@ -2,6 +2,8 @@ import random
 import string
 TOKEN_CHARS = string.ascii_uppercase+string.ascii_lowercase+string.digits
 
+from hashlib import sha256
+
 def random_token(n):
     res = ""
     for i in range(n):
@@ -32,18 +34,19 @@ class UserManager:
     def get_user_by_token(self, token):
         s = self.session()
         try:
-            u = s.query(User).filter_by(token=token).one()
+            token_hash = sha256(token).hexdigest()
+            u = s.query(User).filter(User.token_hash == token_hash).one()
             logging.info("found user %s" % u.email)
             return u
         except NoResultFound:
-            logging.info("Could't find user for token %s" % token)
+            logging.info("Could't find user for token hash %s" % token_hash)
             return None
         finally:
             s.close()
         
-    def add_user(self, email):
+    def add_user(self, email, token):
         s = self.session()
-        u = User(email=email)
+        u = User(email=email, token=token)
         s.add(u)
         s.commit()
         return u
@@ -58,8 +61,8 @@ class User(Base):
     __tablename__ = "users"
     
     email = Column(String, primary_key=True)
-    token = Column(String)
+    token_hash = Column(String)
     
-    def __init__(self, email):
+    def __init__(self, email, token):
         self.email = email
-        self.token = random_token(64)
+        self.token_hash = sha256(token).hexdigest() 
