@@ -6,6 +6,9 @@ from serial import Serial, SerialException
 
 import hooks
 
+class SphincterDisconnectedException(Exception):
+    pass
+
 class SphincterReader:
     """
     Read Sphincter state forever
@@ -101,15 +104,21 @@ class SphincterSerialHandler:
         """
         send open command to sphincter
         """
-        self._serial.write(b"o")
-        logging.info("sent OPEN")
+        if self._serial.isOpen():
+            self._serial.write(b"o")
+            logging.info("sent OPEN")
+        else:
+            raise SphincterDisconnectedException()
         
     def close(self):
         """
         send close command to sphincter
         """
-        self._serial.write(b"c")
-        logging.info("sent CLOSE")
+        if self._serial.isOpen():
+            self._serial.write(b"c")
+            logging.info("sent CLOSE")
+        else:
+            raise SphincterDisconnectedException()
         
     def reset(self):
         """

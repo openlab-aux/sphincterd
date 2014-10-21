@@ -1,6 +1,7 @@
 from threading import Event, Thread
 from time import sleep
 import logging
+from sphincter.serial_connection import SphincterDisconnectedException
 
 REQUEST_OPEN = 1
 REQUEST_CLOSE = 2
@@ -9,6 +10,7 @@ class SphincterRequest(object):
     def __init__(self, request_type):
         self.event = Event()
         self.request_type = request_type
+        self.success = True
 
 class SphincterRequestQueue(object):
     def __init__(self):
@@ -48,12 +50,18 @@ class SphincterRequestHandler(Thread):
                 r = self.request_queue.pop()
                 if r.request_type == REQUEST_OPEN:
                     logging.info("Opening Sphincter")
-                    self.serial_handler.open()
-                    self.serial_handler.open_event.wait()
+                    try:
+                        self.serial_handler.open()
+                        self.serial_handler.open_event.wait()
+                    except SphincterDisconnectedException:
+                        r.success = False
                 elif r.request_type == REQUEST_CLOSE:
                     logging.info("Closing Sphincter")
-                    self.serial_handler.close()
-                    self.serial_handler.closed_event.wait()
+                    try:
+                        self.serial_handler.close()
+                        self.serial_handler.closed_event.wait()
+                    except SphincterRequestQueue:
+                        r.success = False
                 self.request_queue.set_all(r.request_type)
                 r.event.set()
                 
