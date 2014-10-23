@@ -2,9 +2,9 @@
 
 import logging
 from time import sleep
-
 from os import path
 from sys import exit
+from threading import Thread
 
 from argparse import ArgumentParser
 
@@ -13,6 +13,7 @@ from sphincter.requestqueue import SphincterRequestQueue, SphincterRequestHandle
 from sphincter.httpserver import SphincterHTTPServerRunner
 from sphincter.authentication import UserManager
 from sphincter.config import SphincterConfig
+import hooks
 
 if __name__ == "__main__":
     aparser = ArgumentParser(prog="sphincterd",
@@ -99,6 +100,21 @@ if __name__ == "__main__":
     r.start()
     
     SphincterHTTPServerRunner.start_thread((listen_address, listen_port), q, s, um)
+    
+    # run timer hook
+    class TimerThread(Thread):
+        def __init__(self, serial_handler):
+            self._serial_handler = serial_handler
+            Thread.__init__(self, name="TimerThread")
+            self.daemon = True
+        
+        def run(self):
+            while True:
+                hooks.timer_hook(self._serial_handler.state)
+                sleep(300)
+    
+    tthread = TimerThread(s)
+    tthread.start()
     
     # sleep until CTRL-C, then quit.
     try:
