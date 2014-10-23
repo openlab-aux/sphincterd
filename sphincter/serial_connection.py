@@ -28,19 +28,19 @@ class SphincterReader:
                 self.serial_handler.open_event.set()
                 self.serial_handler.open_event.clear()
                 self.state = "UNLOCKED"
-                hooks.open_hook()
+                Thread(target=hooks.open_hook).start()
             elif data == "LOCKED":
                 self.serial_handler.closed_event.set()
                 self.serial_handler.closed_event.clear()
                 self.state = "LOCKED"
-                hooks.closed_hook()
+                Thread(target=hooks.closed_hook).start()
             elif data == "OPEN":
                 self.state = "OPEN"
             elif data == "BUSY":
                 self.state = "BUSY"
             elif data == "FAILURE":
                 self.state = "FAILURE"
-                hooks.failure_hook()
+                Thread(targe=hooks.failure_hook).start()
 
             logging.info("Sphincter state is now %s" % self.state) 
             
