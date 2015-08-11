@@ -57,6 +57,10 @@ def timer_hook(status):
         'Content-type': 'application/json', 
         'Accept': 'text/plain'
     }
-    requests.post(url, data=json.dumps(data), headers=headers)
+
+    try:
+        requests.post(url, data=json.dumps(data), headers=headers)
+    except Exception:
+	pass
  
     logging.info("finishing timer_hook")
