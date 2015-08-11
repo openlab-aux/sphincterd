@@ -29,6 +29,11 @@ class SphincterReader:
 
             if status[0] == 1 and status[1] == 1:
                 newstate = "FAILURE"
+                self.open_event.set()
+                self.open_event.clear()
+                self.close_event.set()
+                self.close_event.clear()
+
             if status[0] == 1 and status[1] == 0:
                 newstate = "OPEN"
                 self.open_event.set()
@@ -46,6 +51,14 @@ class SphincterReader:
                 if self.state == "FAILURE" and newstate == "LOCKED":
                     self.open_event.set()
                     self.open_event.clear()
+
+                # if new state is FAILURE, continue both OPEN and CLOSE requests
+                if newstate == "FAILURE":
+                    self.open_event.set()
+                    self.open_event.clear()
+                    self.close_event.set()
+                    self.close_event.clear()
+
                 self.state = newstate
                 logging.info("Sphincter state is now %s: Pins are %i/%i" % (self.state, status[0], status[1]))
 
