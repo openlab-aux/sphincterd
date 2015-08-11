@@ -35,7 +35,7 @@ class SphincterReader:
                 self.close_event.clear()
 
             if status[0] == 1 and status[1] == 0:
-                newstate = "OPEN"
+                newstate = "UNLOCKED"
                 self.open_event.set()
                 self.open_event.clear()
                 Thread(target=hooks.open_hook).start()
