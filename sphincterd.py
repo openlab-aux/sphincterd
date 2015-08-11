@@ -65,6 +65,7 @@ if __name__ == "__main__":
         exit(1)
 
     logging.basicConfig(level=logging.INFO,
+                        filename='/var/log/sphincterd.log',
                         format='%(asctime)s - %(levelname)8s - %(threadName)s/%(funcName)s - %(message)s',
                         datefmt="%Y-%m-%d %H:%M")
     logging.info("ohai, this is sphincterd")
