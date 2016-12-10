@@ -35,7 +35,8 @@ class UserManager:
         s = self.session()
         try:
             token_hash = sha256(token).hexdigest()
-            u = s.query(User).filter(User.token_hash == token_hash).one()
+            u = s.query(User).filter(User.token_hash == token_hash and
+                                     User.token_type == "web").one()
             logging.info("found user %s" % u.email)
             return u
         except NoResultFound:
@@ -46,7 +47,7 @@ class UserManager:
         
     def add_user(self, email, token):
         s = self.session()
-        u = User(email=email, token=token)
+        u = User(email=email, token=token, token_type = "web")
         s.add(u)
         s.commit()
         return u
@@ -62,7 +63,9 @@ class User(Base):
     
     email = Column(String, primary_key=True)
     token_hash = Column(String)
+    token_type = Column(String)
     
-    def __init__(self, email, token):
+    def __init__(self, email, token, token_type):
         self.email = email
-        self.token_hash = sha256(token).hexdigest() 
+        self.token_hash = sha256(token).hexdigest()
+        self.token_type = token_type
