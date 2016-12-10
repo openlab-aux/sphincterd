@@ -38,14 +38,19 @@ class SphincterReader:
                 newstate = "UNLOCKED"
                 self.open_event.set()
                 self.open_event.clear()
-                Thread(target=hooks.open_hook).start()
+
             if status[0] == 0 and status[1] == 1:
                 newstate = "LOCKED"
                 self.close_event.set()
                 self.close_event.clear()
-                Thread(target=hooks.closed_hook).start()
 
             if newstate != self.state:
+                # run hooks if state has changed
+                if newstate== "UNLOCKED":
+                    Thread(target=hooks.open_hook).start()
+                if newstate == "LOCKED":
+                    Thread(target=hooks.closed_hook).start()
+
                 # After a failure sphincter always goes into LOCKED,
                 # no matter which command is sent.
                 if self.state == "FAILURE" and newstate == "LOCKED":
