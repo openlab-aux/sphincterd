@@ -106,8 +106,8 @@ if __name__ == "__main__":
         
         def run(self):
             while True:
-                hooks.timer_hook(self._serial_handler.state)
                 sleep(300)
+                hooks.timer_hook(self._serial_handler.state)
     
     tthread = TimerThread(s)
     tthread.start()

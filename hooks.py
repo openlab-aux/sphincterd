@@ -33,6 +33,7 @@ def closed_hook():
         'Accept': 'text/plain'
     }
     requests.post(url, data=json.dumps(data), headers=headers)
+    logging.info(requests)
     logging.info("Finishing ClosedHook")
 
 def failure_hook():
@@ -47,6 +48,7 @@ def timer_hook(status):
     api_status = False
     if status == "UNLOCKED" or status == "OPEN":
         api_status = True
+    logging.info("timer_hook: status is: %s", status)
     
     url = "https://api.openlab-augsburg.de/13/edit/door/"
     data = {
@@ -58,9 +60,5 @@ def timer_hook(status):
         'Accept': 'text/plain'
     }
 
-    #try:
-    #    requests.post(url, data=json.dumps(data), headers=headers)
-    #except Exception:
-    #	pass
- 
-    #logging.info("finishing timer_hook")
+    requests.post(url, data=json.dumps(data), headers=headers)
+    logging.info("finishing timer_hook")
